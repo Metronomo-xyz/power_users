@@ -9,6 +9,9 @@ def getPowerUsers(data, nft_contract_id=None):
         #TODO: create normalizers classes
 
         print("offers : ")
+        print("offers len : " + str(len(offers)))
+        if(len(offers) == 0):
+            return
         monetary = offers[["nft_contract_id", "tx_sender", "price"]].groupby(["nft_contract_id", "tx_sender"]).sum()
         parameters_df = monetary
 
@@ -51,22 +54,22 @@ def getPowerUsers(data, nft_contract_id=None):
             else:
                 return pd.Series([c, sender, r, 0, f, 0, m, 0])
 
-            normalized_params = parameters_df.reset_index().apply(lambda x: normalize(x), axis=1).fillna(0)
-            normalized_params.columns = ["nft_contract_id", "tx_sender", "recency", "recency_norm", "frequency",
-                                         "frequency_norm", "monetary", "monetary_norm"]
-            normalized_params = normalized_params.apply(lambda x: pd.Series(
-                [x["nft_contract_id"], x["tx_sender"], x["recency_norm"] * x["frequency_norm"] * x["monetary_norm"]]),
-                axis=1)
-            normalized_params.columns = ["nft_contract_id", "tx_sender", "rfm"]
+        normalized_params = parameters_df.reset_index().apply(lambda x: normalize(x), axis=1).fillna(0)
+        normalized_params.columns = ["nft_contract_id", "tx_sender", "recency", "recency_norm", "frequency",
+                                     "frequency_norm", "monetary", "monetary_norm"]
+        normalized_params = normalized_params.apply(lambda x: pd.Series(
+            [x["nft_contract_id"], x["tx_sender"], x["recency_norm"] * x["frequency_norm"] * x["monetary_norm"]]),
+            axis=1)
+        normalized_params.columns = ["nft_contract_id", "tx_sender", "rfm"]
 
-            quantiles = normalized_params[["nft_contract_id", "rfm"]]
-            quantiles = quantiles.groupby("nft_contract_id").quantile(0.95, interpolation="higher")
+        quantiles = normalized_params[["nft_contract_id", "rfm"]]
+        quantiles = quantiles.groupby("nft_contract_id").quantile(0.95, interpolation="higher")
 
-            result = normalized_params.set_index("nft_contract_id").join(quantiles, rsuffix="_qunatile").reset_index()
-            result = result[result["nft_contract_id"] == nft_contract_id]
-            result = result[(result["rfm"] >= result["rfm_qunatile"])]
+        result = normalized_params.set_index("nft_contract_id").join(quantiles, rsuffix="_qunatile").reset_index()
+        result = result[result["nft_contract_id"] == nft_contract_id]
+        result = result[(result["rfm"] >= result["rfm_qunatile"])]
 
-
+        return result
     else:
         print("no smart contract provided")
 

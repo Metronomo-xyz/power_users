@@ -64,8 +64,12 @@ if __name__ == '__main__':
     gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, run_local=run_local)
     print(gcs_connector)
     df = gcs_connector.getData()
+    df["receiver_account_id"] = df["receiver_account_id"].apply(lambda x: str(x))
 
-    recepies = df["converted_into_receipt_id"].tolist()
+    recepies = df[df["receiver_account_id"].apply(
+        lambda x: ("mintbase" in x) & (x != "mintbase.sputnik-dao.near")
+        )]["converted_into_receipt_id"].tolist()
+
     print("recepies len : ")
     print(len(recepies))
 
