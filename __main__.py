@@ -8,22 +8,24 @@ import datetime
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
-    options = "ln:b:s:r:"
-    long_options = ["local", "network=", "bucket=", "start_date=", "date_range="]
+    options = "ln:b:s:r:c:"
+    long_options = ["local", "network=", "bucket=", "start_date=", "date_range=", "target_smart_contract="]
 
     entities = list()
-    network = c.DEFAULT_NETWORK
-    token_json_path = c.TOKEN_JSON_PATH
-    bucket_name = c.DEFAULT_BUCKET_NAME
+#    network = c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK
+#    token_json_path = c.MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH
+#    bucket_name = c.MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME
     start_date = datetime.date.today() - datetime.timedelta(days=1)
     dates_range = 1
+    target_smart_contract = None
+    run_local = False
 
     try:
         opts, args = getopt.getopt(argv, options, long_options)
 
         for opt, value in opts:
             if opt in ("-l", "--local"):
-                token_json_path = c.LOCAL_TOKEN_JSON_PATH
+                run_local = True
 
             elif opt in ("-n", "--network"):
                 network = value
@@ -45,16 +47,21 @@ if __name__ == '__main__':
                     print("ERROR OCCURED: --date-range must be integer, but " + value + " was given")
                     sys.exit(1)
 
+            elif opt in ("-c", "--target_smart_contract"):
+                target_smart_contract = value
+
     except getopt.GetoptError as e:
         print('Error while parsing command line arguments : ' + str(e))
+
+    if (target_smart_contract is None):
+        raise ValueError("Target smart contract is not provided. Please, use -c or --target_smart_contract option to provide target smart contract value")
 
     print("args handled")
 
     dates = [start_date - datetime.timedelta(days=x) for x in range(dates_range)]
 
-    print("start")
-
-    gcs_connector = dc.MetronomoTXCloudStorageConnector(bucket_name, c.LOCAL_TOKEN_JSON_PATH, network, dates, "daily")
+    print("getting TX data")
+    gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, run_local=run_local)
     print(gcs_connector)
     df = gcs_connector.getData()
 
@@ -62,11 +69,12 @@ if __name__ == '__main__':
     print("recepies len : ")
     print(len(recepies))
 
+    print("getting NFT Activity data : ")
     mintbaseNFTActivityConnector = dc.MintbaseNFTActivitiesConnector()
     print(mintbaseNFTActivityConnector)
     data = mintbaseNFTActivityConnector.getData(recepies)
 
-    print(data[data["kind"] == "make_offer"])
+    print("NFT Activity data len : " + str(len(data[data["kind"] == "make_offer"])))
 
-    result = pu.getPowerUsers(data, 'graffbase.mintbase1.near')
+    result = pu.getPowerUsers(data, target_smart_contract)
     print(result)

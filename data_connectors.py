@@ -1,13 +1,10 @@
 from abc import ABC, abstractmethod
 import pandas as pd
-from google_cloud_storage_utils import google_cloud_storage_utils as csu
+from power_users import config as c
+from power_users import google_cloud_storage_utils as csu
 from google.cloud import storage
 import requests
 import json
-import time
-
-
-
 
 class DataConnector(ABC):
     @abstractmethod
@@ -70,11 +67,28 @@ class MetronomoTXCloudStorageConnector(DataConnector):
         }
     }
 
-    def __init__(self, bucket_name, token_json_path, network, dates, granularity):
-        self.bucket_name = bucket_name
-        self.token_json_path = token_json_path
+    def __init__(self,
+                 dates,
+                 run_local,
+                 bucket_name=c.MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME,
+                 token_json_path=c.MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH,
+                 network=c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK,
+                 granularity=c.MetronomoTXCloudStorageConnector_DEFAULT_GRANULARITY):
+
+        if (run_local):
+            self.token_json_path = c.MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH
+        else:
+            self.token_json_path = token_json_path
+
         self.storage_client = storage.Client.from_service_account_json(self.token_json_path)
-        self.bucket = self.storage_client.bucket(self.bucket_name)
+        self.bucket_name = bucket_name
+        self.bucket = self.storage_client.get_bucket(self.bucket_name)
+
+        if not (network  in self.BLOB_PATHS.keys()):
+            raise ValueError("Wrong network provideded : " + network + ". Network not in BLOB_PATHS. Please choose correct network : " + ", ".join(map(str, self.BLOB_PATHS.keys())))
+        if not (network in set(map(lambda x: x.name.split("/")[0], list(self.bucket.list_blobs())))):
+            raise ValueError("Wrong network provideded : " + network + ". Network not in bucket")
+
         self.network = network
         self.dates = dates
         self.granularity = granularity

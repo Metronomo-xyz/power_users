@@ -1,10 +1,20 @@
 
-DEFAULT_NETWORK = "mainnet"
+"""
+Config file with constants and other configutrations for your data connectors
 
-TOKEN_JSON_PATH = '../web3advertisement-b54340ad58ad.json'
-LOCAL_TOKEN_JSON_PATH = 'C:/Users/yaroslav/Documents/Web3MarketingPlatform/CodeTools/web3advertisement-b54340ad58ad.json'
+All the constants related to specific connectors have name of the connector in the constant name
+"""
+""""""
+MetronomoTXCloudStorageConnector_DEFAULT_NETWORK = "mainnet"
+MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME = "near-data"
+MetronomoTXCloudStorageConnector_DEFAULT_GRANULARITY = "daily"
+MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH = '../web3advertisement-b54340ad58ad.json'
+MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH = 'C:/Users/yaroslav/Documents/Web3MarketingPlatform/CodeTools/web3advertisement-b54340ad58ad.json'
+MetronomoTXCloudStorageConnector_LOCAL_TEST_JSON_WITHOUT_KEY = 'C:/Users/yaroslav/Documents/Metronomo/power_users/test_json_without_key.json'
+MetronomoTXCloudStorageConnector_LOCAL_TEST_JSON_WITH_NO_PERMISSIONS = 'C:/Users/yaroslav/Documents/Metronomo/power_users/web3advertisement-0a5600f53222.json'
 
-ENTITIES = {
+
+MetronomoTXCloudStorageConnector_ENTITIES = {
     "transactions" : {
         "fields": ["signer_account_id", "receiver_account_id", "converted_into_receipt_id"],
         "files_part" : "transactions"
@@ -15,7 +25,7 @@ ENTITIES = {
     }
 }
 
-BLOB_PATHS = {
+MetronomoTXCloudStorageConnector_BLOB_PATHS = {
     "mainnet": {
         "hourly": {
             "transactions" : "mainnet/hourly_data/transactions/",
@@ -41,5 +51,3 @@ BLOB_PATHS = {
         }
     }
 }
-
-DEFAULT_BUCKET_NAME = "near-data"
