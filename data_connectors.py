@@ -12,60 +12,42 @@ class DataConnector(ABC):
         pass
 
 class MetronomoTXCloudStorageConnector(DataConnector):
-    # This class implements TXDataConnector class
-    # and incapsulates the logic to retrieve data from
-    # Metronomno.xyz Google Cloud Storage
-    # Current implementation will NOT be useful for anyone who wants to use power_users tool
-    # However if you use data from your own Google Cloud Storage
-    # it is possible to adjust the code to your need
 
-    # The main source of data below was NEAR Indexer for Explorer PostgresSQL database
-    # https://github.com/near/near-indexer-for-explorer
-    # We get transactions table once a day for previous day in a hourly batches
+    # this variabel stores some Metronomo.xyz Google Cloud Storage blobs structure to generalize access
+    # to possible different datasets
 
     ENTITIES = {
         "transactions": {
             "fields": ["signer_account_id", "receiver_account_id", "converted_into_receipt_id"],
-            "fields_extended": ["signer_account_id", "receiver_account_id", "converted_into_receipt_id"],
-            "files_part": "transactions"
         },
         "actions": {
             "fields": ["receipt_id", "action_kind"],
-            "fields_extended": ["receipt_id", "action_kind", "args"],
-            "files_part": "actionreceiptactions"
         }
     }
 
     BLOB_PATHS = {
         "mainnet": {
-            "hourly": {
-                "transactions": "mainnet/hourly_data/transactions/",
-                "actions": "mainnet/hourly_data/action_receipt_actions/"
-            },
-            "monthly": {
-                "transactions": "mainnet/monthly_data/transactions/",
-                "actions": "mainnet/monthly_data/action_receipt_actions/"
-            },
             "daily": {
                 "transactions": "mainnet/daily_data/transactions/",
                 "actions": "mainnet/daily_data/action_receipt_actions/"
-            },
-            "daily_extended": {
-                "transactions": "mainnet/daily_data_extended/transactions/",
-                "actions": "mainnet/daily_data_extended/action_receipt_actions/"
-            }
-        },
-        "testnet": {
-            "hourly": {
-                "transactions": "testnet/hourly_data/transactions/",
-                "actions": "testnet/hourly_data/action_receipt_actions/"
-            },
-            "monthly": {
-                "transactions": "testnet/monthly_data/transactions/",
-                "actions": "testnet/monthly_data/action_receipt_actions/"
             }
         }
     }
+
+    # This class implements DataConnector class
+    # and incapsulates the logic to retrieve TX data from
+    # Metronomno.xyz Google Cloud Storage
+
+    # Current implementation will NOT be useful for anyone who wants to use power_users tool
+    # However if you use data from your own Google Cloud Storage it is possible to adjust the code to your needs
+
+    # The main source of data below was NEAR Indexer for Explorer PostgresSQL database
+    # https://github.com/near/near-indexer-for-explorer
+    # We get transactions table once a day for previous day in a hourly batches.
+    # Then we combine hourly batches into one daily batch
+
+    # MetronomoTXCloudStorageConnector stores some data structure for Metronomno.xyz Google Cloud Storage data
+    # for using in Power Users module
 
     def __init__(self,
                  dates,
@@ -74,6 +56,22 @@ class MetronomoTXCloudStorageConnector(DataConnector):
                  token_json_path=c.MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH,
                  network=c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK,
                  granularity=c.MetronomoTXCloudStorageConnector_DEFAULT_GRANULARITY):
+        """
+        Parameters
+        ----------
+        dates: str
+            dates range to retrieve the data. Should be iterable of datetime.date type
+        run_local: str
+            flag to run code locally (priority higher than token_json_path). In case of local running path for local toke_json file is used
+        bucket_name: str
+            name of the bucket to get data from. Either provided or got from config.py file, variable MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME
+        token_json_path: str
+            path to token json file. Either provided or got from config.py file, variable MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH
+        network:
+            network to get data from. Currently, possible only "mainnet" data
+        granularity:
+            data granularity to retrive. Currently possible only "daily" data
+        """
 
         if (run_local):
             self.token_json_path = c.MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH
@@ -130,7 +128,45 @@ class MetronomoTXCloudStorageConnector(DataConnector):
         return tx_df
 
 class MintbaseNFTActivitiesConnector(DataConnector):
+    """
+    This class implements DataConnector class
+    and incapsulates the logic to retrieve TX data from
+    Mintbase GraphQL https://docs.mintbase.io/dev/read-data/mintbase-graph
+
+    This class might be usefull to retrieve NFT Activity data for anyone who have list of receipt_ids of interested TX
+
+    Currently you need to have a list of receipt_ids of interested TX to be able to get TX sender and, therefore,
+    use this knowledge to find nft_smart_contract power users
+
+    """
+
     def getData(self, recipies):
+
+        """
+        Method to get the NFT Activities data from Mintbase GraphQL https://docs.mintbase.io/dev/read-data/mintbase-graph
+
+        Parameters
+        ----------
+        recipies : list[str]
+            list of recepies for NFT Actions data retrieval (to use in "where: {receipt_id: {_in: $recepies}}" part of query)
+
+        Returns
+        ------
+        data: pandas.DataFrame
+            NFT Activities data
+            receipt_id,
+            price,
+            kind,
+            token_id,
+            nft_contract_id,
+            tx_sender,
+            action_receiver,
+            action_sender,
+            timestamp,
+            memo
+
+        """
+
         recepies_string = str(recipies).replace("\'", "\"")
         url = "https://interop-mainnet.hasura.app/v1/graphql"
 
@@ -139,7 +175,8 @@ class MintbaseNFTActivitiesConnector(DataConnector):
         }
 
         payload = json.dumps({
-            "query": "query MyQuery {nft_activities(where: {receipt_id: {_in: " + recepies_string + "}}){receipt_id,price,kind,token_id,nft_contract_id,tx_sender,action_receiver,action_sender,timestamp,memo}}"
+            "query": "query MyQuery {nft_activities(where: {receipt_id: {_in: " + recepies_string + \
+            "}}){receipt_id,price,kind,token_id,nft_contract_id,tx_sender,timestamp,memo}}"
         })
 
         response = requests.request("POST", url, headers=headers, data=payload)

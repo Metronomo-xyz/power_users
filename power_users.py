@@ -4,6 +4,28 @@ import datetime
 
 
 def getPowerUsers(data, nft_contract_id=None):
+    """
+    Method to get power users (most valuable users) of given smart contract across the data
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        dataframe of NFT Activities with necessary fields:
+            - kind
+            - nft_contract_id
+            - tx_sender
+            - price
+            - timestamp
+
+    nft_contract_id : str
+        nft_contract_id to search for it's power users
+
+    Returns
+    ------
+    result: list[str]
+        list of tx_sender addresses that are identified as nft_smart_contract power users
+    """
+
     if (nft_contract_id):
         offers = data[((data["kind"] == "make_offer") & (data["nft_contract_id"] == nft_contract_id))]
         #TODO: create normalizers classes
@@ -69,7 +91,7 @@ def getPowerUsers(data, nft_contract_id=None):
         result = result[result["nft_contract_id"] == nft_contract_id]
         result = result[(result["rfm"] >= result["rfm_qunatile"])]
 
-        return result
+        return result["tx_sender"].to_list()
     else:
         print("no smart contract provided")
 

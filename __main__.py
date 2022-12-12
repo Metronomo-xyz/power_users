@@ -1,4 +1,3 @@
-from power_users import config as c
 from power_users import data_connectors as dc
 from power_users import power_users as pu
 import getopt
@@ -12,9 +11,6 @@ if __name__ == '__main__':
     long_options = ["local", "network=", "bucket=", "start_date=", "date_range=", "target_smart_contract="]
 
     entities = list()
-#    network = c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK
-#    token_json_path = c.MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH
-#    bucket_name = c.MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME
     start_date = datetime.date.today() - datetime.timedelta(days=1)
     dates_range = 1
     target_smart_contract = None
@@ -76,7 +72,9 @@ if __name__ == '__main__':
     print("getting NFT Activity data : ")
     mintbaseNFTActivityConnector = dc.MintbaseNFTActivitiesConnector()
     print(mintbaseNFTActivityConnector)
+
     data = mintbaseNFTActivityConnector.getData(recepies)
+    data = data[data["kind"] == "make_offer"]
 
     print("NFT Activity data len : " + str(len(data[data["kind"] == "make_offer"])))
 

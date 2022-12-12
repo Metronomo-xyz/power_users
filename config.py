@@ -1,7 +1,5 @@
-
 """
 Config file with constants and other configutrations for your data connectors
-
 All the constants related to specific connectors have name of the connector in the constant name
 """
 """"""
