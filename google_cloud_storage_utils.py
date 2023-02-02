@@ -58,7 +58,7 @@ def filter_blobs_by_path(blob_list, path) -> list[str]:
 
     return list(filter(lambda b: path in b, blob_list))
 
-def get_dataframe_from_blob(bucket, blob_name, fields, token_json_path) -> pd.DataFrame:
+def get_dataframe_from_blob(bucket, blob_name, token_json_path=None, fields=None) -> pd.DataFrame:
     """
     Parameters
     ----------
@@ -71,9 +71,18 @@ def get_dataframe_from_blob(bucket, blob_name, fields, token_json_path) -> pd.Da
     token_json_path : str
         path to token json file
     """
-
-    return pd.read_csv("gs://" + bucket.name + "/" + blob_name,
-                       storage_options={"token": token_json_path})[fields]
+    if (fields):
+        if (token_json_path):
+            return pd.read_csv("gs://" + bucket.name + "/" + blob_name,
+                               storage_options={"token": token_json_path})[fields]
+        else:
+            return pd.read_csv("gs://" + bucket.name + "/" + blob_name)[fields]
+    else:
+        if (token_json_path):
+            return pd.read_csv("gs://" + bucket.name + "/" + blob_name,
+                               storage_options={"token": token_json_path})
+        else:
+            return pd.read_csv("gs://" + bucket.name + "/" + blob_name)
 
 # TODO: somehow make this method more general
 def filter_blobs_by_dates(blob_list, dates_arr) -> list[str]:

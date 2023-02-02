@@ -51,7 +51,8 @@ class MetronomoTXCloudStorageConnector(DataConnector):
 
     def __init__(self,
                  dates,
-                 run_local,
+                 run_local=False,
+                 with_public_data=False,
                  bucket_name=c.MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME,
                  token_json_path=c.MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH,
                  network=c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK,
@@ -73,12 +74,18 @@ class MetronomoTXCloudStorageConnector(DataConnector):
             data granularity to retrive. Currently possible only "daily" data
         """
 
-        if (run_local):
-            self.token_json_path = c.MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH
-        else:
-            self.token_json_path = token_json_path
+        self.with_public_data = with_public_data
+        if (self.with_public_data):
+            self.token_json_path = None
+            self.storage_client = storage.Client(project=c.MetronomoTXCloudStorageConnector_DEFAULT_PROJECT)
 
-        self.storage_client = storage.Client.from_service_account_json(self.token_json_path)
+        else:
+            if (run_local):
+                self.token_json_path = c.MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH
+            else:
+                self.token_json_path = token_json_path
+            self.storage_client = storage.Client.from_service_account_json(self.token_json_path)
+
         self.bucket_name = bucket_name
         self.bucket = self.storage_client.get_bucket(self.bucket_name)
 
@@ -115,12 +122,19 @@ class MetronomoTXCloudStorageConnector(DataConnector):
         for tx_b in tx_blobs:
             print("current blob : ")
             print(tx_b)
-            tx_data = csu.get_dataframe_from_blob(
-                self.bucket,
-                tx_b,
-                self.ENTITIES["transactions"]["fields"],
-                self.token_json_path
-            )
+            if (self.with_public_data):
+                tx_data = csu.get_dataframe_from_blob(
+                    self.bucket,
+                    tx_b,
+                    fields=self.ENTITIES["transactions"]["fields"]
+                )
+            else:
+                tx_data = csu.get_dataframe_from_blob(
+                    self.bucket,
+                    tx_b,
+                    fields=self.ENTITIES["transactions"]["fields"],
+                    token_json_path=self.token_json_path
+                )
             tx_data = tx_data[["signer_account_id", "receiver_account_id", "converted_into_receipt_id"]]
             tx_df = pd.concat([tx_df, tx_data])
         print("tx_df head : ")

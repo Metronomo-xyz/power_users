@@ -7,14 +7,15 @@ import datetime
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
-    options = "ln:b:s:r:c:"
-    long_options = ["local", "network=", "bucket=", "start_date=", "date_range=", "target_smart_contract="]
+    options = "lpn:b:s:r:c:"
+    long_options = ["local", "public-data", "network=", "bucket=", "start_date=", "date_range=", "target_smart_contract="]
 
     entities = list()
     start_date = datetime.date.today() - datetime.timedelta(days=1)
     dates_range = 1
     target_smart_contract = None
     run_local = False
+    with_public_data = False
 
     try:
         opts, args = getopt.getopt(argv, options, long_options)
@@ -22,6 +23,9 @@ if __name__ == '__main__':
         for opt, value in opts:
             if opt in ("-l", "--local"):
                 run_local = True
+
+            elif opt in ("-p", "--public-data"):
+                with_public_data = True
 
             elif opt in ("-n", "--network"):
                 network = value
@@ -57,7 +61,7 @@ if __name__ == '__main__':
     dates = [start_date - datetime.timedelta(days=x) for x in range(dates_range)]
 
     print("getting TX data")
-    gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, run_local=run_local)
+    gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, run_local=run_local, with_public_data=with_public_data)
     print(gcs_connector)
     df = gcs_connector.getData()
     df["receiver_account_id"] = df["receiver_account_id"].apply(lambda x: str(x))

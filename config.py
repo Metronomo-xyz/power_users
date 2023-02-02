@@ -3,8 +3,9 @@ Config file with constants and other configutrations for your data connectors
 All the constants related to specific connectors have name of the connector in the constant name
 """
 """"""
+MetronomoTXCloudStorageConnector_DEFAULT_PROJECT = "web3advertisement"
+MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME = "near-data-public"
 MetronomoTXCloudStorageConnector_DEFAULT_NETWORK = "mainnet"
-MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME = "near-data"
 MetronomoTXCloudStorageConnector_DEFAULT_GRANULARITY = "daily"
 MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH = '../web3advertisement-b54340ad58ad.json'
 MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH = 'C:/Users/yaroslav/Documents/Web3MarketingPlatform/CodeTools/web3advertisement-b54340ad58ad.json'
