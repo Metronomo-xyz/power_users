@@ -66,7 +66,7 @@ For other ways to create credentials see
 
 ### 5. Run the module
 
-```python3 -m power_users -c voiceoftheoceans.mintbase1.near -p -s 12122022 -r 30```
+```python3 -m power_users -c voiceoftheoceans.mintbase1.near -p -s 31012023 -r 30```
 
 ### 6. Possible options:
 
