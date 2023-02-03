@@ -51,7 +51,7 @@ class MetronomoTXCloudStorageConnector(DataConnector):
 
     def __init__(self,
                  dates,
-                 token_json_path,
+                 token_json_path=None,
                  with_public_data=False,
                  bucket_name=c.MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME,
                  network=c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK,
@@ -94,7 +94,7 @@ class MetronomoTXCloudStorageConnector(DataConnector):
         self.dates = dates
         self.granularity = granularity
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "CloudStorageConnectror object : " + "\n" + \
                "bucket_name : " + str(self.bucket_name) + "\n" + \
                "token_json_path : " + str(self.token_json_path) + "\n" + \
@@ -104,7 +104,7 @@ class MetronomoTXCloudStorageConnector(DataConnector):
                "dates : " + ",".join([str(d) for d in self.dates]) + "\n" + \
                "granularity : " + str(self.granularity)
 
-    def getData(self):
+    def getData(self) -> pd.DataFrame:
         all_blobs = csu.get_blob_list(self.storage_client, self.bucket)
         tx_blobs = csu.filter_blobs_by_path(
             all_blobs,
@@ -147,7 +147,7 @@ class MintbaseNFTActivitiesConnector(DataConnector):
 
     """
 
-    def getData(self, recipies):
+    def getData(self, recipies) -> pd.DataFrame:
 
         """
         Method to get the NFT Activities data from Mintbase GraphQL https://docs.mintbase.io/dev/read-data/mintbase-graph

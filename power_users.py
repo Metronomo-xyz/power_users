@@ -1,9 +1,9 @@
 import pandas as pd
 import datetime
+from typing import List
 
 
-
-def getPowerUsers(data, nft_contract_id=None):
+def getPowerUsers(data, nft_contract_id=None) -> List[str]:
     """
     Method to get power users (most valuable users) of given smart contract across the data
 

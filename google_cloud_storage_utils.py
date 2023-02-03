@@ -1,6 +1,6 @@
 from google.cloud import storage
 import pandas as pd
-
+from typing import List
 
 def get_bucket(token_json_path, bucket_name) -> storage.Bucket:
     """
@@ -17,7 +17,7 @@ def get_bucket(token_json_path, bucket_name) -> storage.Bucket:
     bucket = storage_client.get_bucket(bucket_name)
     return bucket
 
-def get_blob_list(storage_client, bucket_obj) -> list[str]:
+def get_blob_list(storage_client, bucket_obj) -> List[str]:
     """
     Parameters
     ----------
@@ -46,7 +46,7 @@ def write_dataframe_to_blob(data_frame, bucket, blob_name) -> None:
         bucket.blob(blob_name).delete()
     bucket.blob(blob_name).upload_from_string(data_frame.to_csv(), 'text/csv')
 
-def filter_blobs_by_path(blob_list, path) -> list[str]:
+def filter_blobs_by_path(blob_list, path) -> List[str]:
     """
     Parameters
     ----------
@@ -85,7 +85,7 @@ def get_dataframe_from_blob(bucket, blob_name, token_json_path=None, fields=None
             return pd.read_csv("gs://" + bucket.name + "/" + blob_name)
 
 # TODO: somehow make this method more general
-def filter_blobs_by_dates(blob_list, dates_arr) -> list[str]:
+def filter_blobs_by_dates(blob_list, dates_arr) -> List[str]:
     """
     Parameters
     ----------
