@@ -15,9 +15,73 @@ Supposed use case:
 
 
 ## Self-hosted usage as a standalone script
-1. Clone this repository
-2. Implement DataConnector child class with getData method to get receipt_id of interested transactions
-3. Change __main__.py to get data from your data connector (created on step 2) and provide MintbaseNFTActivityDataConnector with list of receipt_ids
+
+
+###0. Clone this repository
+```
+git clone https://github.com/Metronomo-xyz/power_users.git
+```
+
+###1. Chose the way how to use power_users module
+
+It's possible to use power_users method with public available data in Google Cloud Storage Bucket `near-data-public`
+There is only data needed for power-user module in `near-data-public` bucket. Inspect the bucket or the `config.py` to get the bucket structure.
+To use module with public data user `-p` option
+
+Other way is to implement your own data connector (inherit `DataConnector` class). Data connector to transactions data must have method `getData`, which return pandas `DataFrame` with `["signer_account_id", "receiver_account_id", "converted_into_receipt_id"]` columns
+Implement DataConnector child class with getData method to get receipt_id of interested transactions
+
+Next steps will describe if you want to use public data
+
+###2. Create virtual environment
+
+It's recomended to use virtual environment while using module
+
+If you don't have `venv` installed run (ex. for Ubuntu)
+```
+sudo apt-get install python3-venv
+
+```
+then create and activate virtuale environmnt
+```
+python3 -m venv power_users
+source power_users/bin/activate
+```
+
+### 3. Install requirements
+Run
+```
+pip install -r power_users/requirements.txt
+```
+### 4. Create google auth default credentials 
+The easiest method is to run
+
+```gcloud auth application-default login --no-launch-browser```
+
+and then copy authentication link to browes and then copu code from browser to shell.
+
+For other ways to create credentials see
+
+[https://cloud.google.com/docs/authentication/provide-credentials-adc](https://cloud.google.com/docs/authentication/provide-credentials-adc)
+
+### 5. Run the module
+
+```python3 -m power_users -c voiceoftheoceans.mintbase1.near -p -s 12122022 -r 30```
+
+### 6. Possible options:
+
+- `-p`, `--public-data` to use module with public data
+- `-n`, `--netowrk` to choose NEAR network. Currently, only `mainnet` is available
+- `-b`, `--bucket` to chose the bucket from which to take the data
+- `-t, `--token-json-path` to provide token json file path
+- `-s`, `--start_date` the last date of the dates period in `ddmmyyyy` format
+- `-r`, `--date_range` number of days to take into power users calculation. For example, if start date is 12122022 and range 30 then dates will be since 13-11-2022 to 12-12-2022 inclusively
+- `-c`, `--target_smart_contract` smart contract ot analyze. It should be NFT contract
+
+### 7. Get the result
+For now module returns list of wallets, which have the most value for smart contract according to their interaction activity.
+It;s possible to just copy result from shell, but better way is to change `__main__.py` to store results as `.csv` or any other suitable for you file type
+
 
 ## Self-hosted usage as a module
 1. Clone this repository

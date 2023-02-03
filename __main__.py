@@ -14,7 +14,6 @@ if __name__ == '__main__':
     start_date = datetime.date.today() - datetime.timedelta(days=1)
     dates_range = 1
     target_smart_contract = None
-    run_local = False
     with_public_data = False
     token_json_path = None
 
@@ -22,10 +21,7 @@ if __name__ == '__main__':
         opts, args = getopt.getopt(argv, options, long_options)
 
         for opt, value in opts:
-            if opt in ("-l", "--local"):
-                run_local = True
-
-            elif opt in ("-p", "--public-data"):
+            if opt in ("-p", "--public-data"):
                 with_public_data = True
 
             elif opt in ("-n", "--network"):
