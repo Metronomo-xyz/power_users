@@ -50,7 +50,6 @@ def getPowerUsers(data, nft_contract_id=None):
         parameters_df.columns = ["monetary", "recency", "frequency"]
 
         def normalize(x):
-            #    print(x)
             c = x["nft_contract_id"]
             sender = x["tx_sender"]
             m = x.monetary

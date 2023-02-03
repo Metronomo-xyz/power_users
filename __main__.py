@@ -16,6 +16,7 @@ if __name__ == '__main__':
     target_smart_contract = None
     run_local = False
     with_public_data = False
+    token_json_path = None
 
     try:
         opts, args = getopt.getopt(argv, options, long_options)
@@ -32,6 +33,9 @@ if __name__ == '__main__':
 
             elif opt in ("-b", "--bucket"):
                 bucket_name = value
+
+            elif opt in ("-t", "--token-json-path"):
+                token_json_path = value
 
             elif opt in ("-s", "--start_date"):
                 try:
@@ -56,12 +60,17 @@ if __name__ == '__main__':
     if (target_smart_contract is None):
         raise ValueError("Target smart contract is not provided. Please, use -c or --target_smart_contract option to provide target smart contract value")
 
-    print("args handled")
+    if ((token_json_path is None) & (with_public_data == False)):
+        raise ValueError("Wrong credentials: possible either use public data or private data with token_json_path. Provide either token_json_path or with_public_data flag")
 
     dates = [start_date - datetime.timedelta(days=x) for x in range(dates_range)]
 
-    print("getting TX data")
-    gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, run_local=run_local, with_public_data=with_public_data)
+    print("getting tx data")
+    if (with_public_data):
+        gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, with_public_data=with_public_data)
+    else:
+        gcs_connector = dc.MetronomoTXCloudStorageConnector(dates, token_json_path=token_json_path)
+
     print(gcs_connector)
     df = gcs_connector.getData()
     df["receiver_account_id"] = df["receiver_account_id"].apply(lambda x: str(x))

@@ -51,10 +51,9 @@ class MetronomoTXCloudStorageConnector(DataConnector):
 
     def __init__(self,
                  dates,
-                 run_local=False,
+                 token_json_path,
                  with_public_data=False,
                  bucket_name=c.MetronomoTXCloudStorageConnector_DEFAULT_BUCKET_NAME,
-                 token_json_path=c.MetronomoTXCloudStorageConnector_TOKEN_JSON_PATH,
                  network=c.MetronomoTXCloudStorageConnector_DEFAULT_NETWORK,
                  granularity=c.MetronomoTXCloudStorageConnector_DEFAULT_GRANULARITY):
         """
@@ -80,10 +79,7 @@ class MetronomoTXCloudStorageConnector(DataConnector):
             self.storage_client = storage.Client(project=c.MetronomoTXCloudStorageConnector_DEFAULT_PROJECT)
 
         else:
-            if (run_local):
-                self.token_json_path = c.MetronomoTXCloudStorageConnector_LOCAL_TOKEN_JSON_PATH
-            else:
-                self.token_json_path = token_json_path
+            self.token_json_path = token_json_path
             self.storage_client = storage.Client.from_service_account_json(self.token_json_path)
 
         self.bucket_name = bucket_name
@@ -105,7 +101,7 @@ class MetronomoTXCloudStorageConnector(DataConnector):
                "storage_client : " + str(self.storage_client) + "\n" + \
                "bucket : " + str(self.bucket) + "\n" + \
                "network : " + str(self.network) + "\n" + \
-               "dates : " + str(self.dates) + "\n" + \
+               "dates : " + ",".join([str(d) for d in self.dates]) + "\n" + \
                "granularity : " + str(self.granularity)
 
     def getData(self):
@@ -115,12 +111,10 @@ class MetronomoTXCloudStorageConnector(DataConnector):
             self.BLOB_PATHS[self.network][self.granularity]["transactions"],
         )
         tx_blobs = csu.filter_blobs_by_dates(tx_blobs, self.dates)
-        print("tx_blobs : ")
-        print(tx_blobs)
 
         tx_df = pd.DataFrame()
+        print("Loading tx data from blobs:")
         for tx_b in tx_blobs:
-            print("current blob : ")
             print(tx_b)
             if (self.with_public_data):
                 tx_data = csu.get_dataframe_from_blob(
@@ -137,8 +131,7 @@ class MetronomoTXCloudStorageConnector(DataConnector):
                 )
             tx_data = tx_data[["signer_account_id", "receiver_account_id", "converted_into_receipt_id"]]
             tx_df = pd.concat([tx_df, tx_data])
-        print("tx_df head : ")
-        print(tx_df.head(5))
+        print("tx number : " + str(len(tx_df)))
         return tx_df
 
 class MintbaseNFTActivitiesConnector(DataConnector):
