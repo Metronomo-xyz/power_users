@@ -73,7 +73,7 @@ For other ways to create credentials see
 - `-p`, `--public-data` to use module with public data
 - `-n`, `--netowrk` to choose NEAR network. Currently, only `mainnet` is available
 - `-b`, `--bucket` to chose the bucket from which to take the data
-- `-t, `--token-json-path` to provide token json file path
+- `-t`, `--token-json-path` to provide token json file path
 - `-s`, `--start_date` the last date of the dates period in `ddmmyyyy` format
 - `-r`, `--date_range` number of days to take into power users calculation. For example, if start date is 12122022 and range 30 then dates will be since 13-11-2022 to 12-12-2022 inclusively
 - `-c`, `--target_smart_contract` smart contract ot analyze. It should be NFT contract
